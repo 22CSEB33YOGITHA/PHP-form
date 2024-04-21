@@ -1,0 +1,90 @@
+--> register.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+</head>
+<body>
+    <h2>User Registration</h2>
+    <form action="EX_11.php" method="post">
+        <label for="user_input">Username:</label>
+        <input type="text" id="user_input" name="user_input" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required minlength="8"><br><br>
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>
+
+-->  EX_11.php
+<?php
+$host="localhost";
+$db_username="root";
+$db_password="";
+$db="userdb";
+$conn=new mysqli($host,$db_username,$db_password,$db);
+if($conn->connect_error){
+    echo "Can't connect";
+}
+else{
+    echo "Connected successfully";
+}
+echo "<br>";
+// $sql="create database userdb";
+// if($conn->query ($sql)){
+//     echo "DB created";
+// }
+// else{
+//     echo "DB not created";
+// }
+// $sql="create table users(ID int auto_increment primary key,username varchar(10) NOT NULL,password varchar(15) NOT NULL)";
+// if($conn->query ($sql)){
+//         echo "Table created";
+//     }
+// else{
+//        echo "Table not created";
+// }
+$username = $password = "";
+$username_err = $password_err = $message = "";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if (empty(trim($_POST["user_input"]))) {
+        $username_err = "Please enter a username.";
+    } else {
+        $username = trim($_POST["user_input"]);
+    }
+    if (empty(trim($_POST["password"]))) {
+        $password_err = "Please enter a password.";     
+    } elseif (strlen(trim($_POST["password"])) < 8) {
+        $password_err = "Password must have at least 8 characters.";
+    } else {
+        $password = trim($_POST["password"]);
+    }
+    if (empty($username_err) && empty($password_err)) {
+        $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("ss", $param_username, $param_password);
+            $param_username = $username;
+            $param_password = password_hash($password, PASSWORD_DEFAULT);
+            if ($stmt->execute()) {
+                $message = "User registered successfully.";
+            } else {
+                $message = "Error: " . $sql . "<br>" . $conn->error;
+            }
+            $stmt->close();
+        }
+    }
+    $conn->close();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+</head>
+<body>
+    <h2>User Registration</h2>
+    <p><?php echo isset($message) ? $message : ""; ?></p>
+</body>
+</html>
